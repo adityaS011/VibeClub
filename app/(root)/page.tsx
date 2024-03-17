@@ -24,11 +24,10 @@ export default async function Home() {
         <div className="wrapper grid grid-cols-1 gap-5 md:grid-cols-2 2xl:gap-0">
           <div className="flex flex-col justify-center gap-8">
             <h1 className="h2-bold dark:text-white">
-            Empower Your Events: Hosting, Connecting, and Celebrating on Our Platform!
+            Connecting people. Creating experiences. Celebrating life.
             </h1>
             <p className="p-regular-18 md:p-regular-20 dark:text-gray-400">
-            Unlock insights and guidance from 3,168+ mentors across top-tier 
-                  global companies within our dynamic community.
+            Craft meaningful connections. We create unforgettable offline experiences for your brand or celebration. 
             </p>
             <Button
               size="lg"
@@ -36,7 +35,7 @@ export default async function Home() {
               className="button w-full font-semibold sm:w-fit"
             >
               <Link href="#events" className="dark:text-white font-semibold">
-                Explore Now
+                Join an Event Today!
               </Link>
             </Button>
           </div>

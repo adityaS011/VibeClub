@@ -21,12 +21,12 @@ const Footer = () => {
               src="/assets/icons/logo.png"
               alt="VibeClub"
               width={80}
-      height={10}
+      height={9}
             />
           )}
         </Link>
         <p className="p-medium-16 dark:text-white">
-          &copy; 2024 PlanIT. All rights reserved.{" "}
+          &copy; 2024 VibeClub. All rights reserved.{" "}
         </p>
         <p className="p-medium-16 dark:text-white">
           Coded by{" "}
