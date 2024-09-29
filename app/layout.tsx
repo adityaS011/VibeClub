@@ -27,7 +27,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={nunito.variable}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider >{children}</ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
