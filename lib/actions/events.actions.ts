@@ -168,6 +168,41 @@ export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUs
   }
 }
 
+// GET EVENTS BY LOCATION
+export async function getEventsByLocation({
+  location,
+  limit = 6,
+  page = 1,
+}: {
+  location: string;
+  limit?: number;
+  page?: number;
+}) {
+  try {
+    await connectToDatabase();
+
+    const locationCondition = location
+      ? { location: { $regex: location, $options: 'i' } }
+      : {};
+
+    const skipAmount = (Number(page) - 1) * limit;
+    const eventsQuery = Event.find(locationCondition)
+      .sort({ startDateTime: 'asc' })
+      .skip(skipAmount)
+      .limit(limit);
+
+    const events = await populateEvent(eventsQuery);
+    const eventsCount = await Event.countDocuments(locationCondition);
+
+    return {
+      data: JSON.parse(JSON.stringify(events)),
+      totalPages: Math.ceil(eventsCount / limit),
+    };
+  } catch (error) {
+    handleError(error);
+  }
+}
+
 // GET RELATED EVENTS: EVENTS WITH SAME CATEGORY
 export async function getRelatedEventsByCategory({
   categoryId,

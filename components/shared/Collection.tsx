@@ -1,5 +1,6 @@
 import { IEvent } from "@/lib/database/models/event.model";
 import Card from "./Card";
+import Pagination from "./Pagination";
 
 type CollectionProps = {
   data: IEvent[];
@@ -11,6 +12,7 @@ type CollectionProps = {
   totalPages?: number;
   urlParamName?: string;
 };
+
 const Collection = ({
   data,
   emptyTitle,
@@ -31,10 +33,7 @@ const Collection = ({
               const hidePrice = collectionType === "My_Tickets";
 
               return (
-                <li
-                  key={event._id}
-                  className="flex justify-center w-full"
-                >
+                <li key={event._id} className="flex justify-center w-full">
                   <Card
                     hasOrderLink={hasOrderLink}
                     hidePrice={hidePrice}
@@ -44,11 +43,18 @@ const Collection = ({
               );
             })}
           </ul>
+          {totalPages > 1 && (
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              urlParamName={urlParamName}
+            />
+          )}
         </div>
       ) : (
-        <div className="flex-center wrapper min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-gray-50 py-28 text-center ">
-          <h2 className="p-bold-20 md:h5-bold">{emptyTitle}</h2>
-          <p className="p-regular-14">{emptyStateSubtext}</p>
+        <div className="flex-center wrapper min-h-[200px] w-full flex-col gap-3 rounded-[14px] bg-gray-50 dark:bg-slate-800/50 py-28 text-center">
+          <h2 className="p-bold-20 md:h5-bold dark:text-white">{emptyTitle}</h2>
+          <p className="p-regular-14 dark:text-grey-400">{emptyStateSubtext}</p>
         </div>
       )}
     </>

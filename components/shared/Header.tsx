@@ -7,59 +7,48 @@ import NavItems from "./NavItems";
 import MobileNav from "./MobileNav";
 import SwitcherTheme from "../ui/SwitcherTheme";
 import { useThemeStore } from "@/store/theme";
-import { MotionHeader } from "./animated/MotionHeader";
+import ScrollAwareHeader from "./ScrollAwareHeader";
 
 const Header = () => {
   const { darkMode } = useThemeStore();
 
   return (
-    <MotionHeader
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 100 }}
-      transition={{ delay: 0.5 }}
-      className="w-full border-b dark:border-primary-500"
-    >
-      <div className="wrapper flex items-center w-0 justify-between">
-      <Link rel="stylesheet" href="/">
-  {darkMode ? (
-    <Image
-      src="/assets/icons/logo-dark.png"
-      alt="VibeClub"
-      width={80}
-      height={10}
-      className="p-0 m-0" // Add m-0 class here
-    />
-  ) : (
-    <Image
-      src="/assets/icons/logo.png"
-      alt="VibeClub"
-      width={80}
-      height={10}
-      className="p-0 m-0" // Add m-0 class here
-    />
-  )}
-</Link>
+    <ScrollAwareHeader>
+      <div className="wrapper flex items-center w-full justify-between py-3">
+        <Link href="/">
+          <Image
+            src={darkMode ? "/assets/icons/logo-dark.png" : "/assets/icons/logo.png"}
+            alt="VibeClub"
+            width={80}
+            height={24}
+            style={{ height: "auto" }}
+            className="p-0 m-0"
+          />
+        </Link>
+
         <SignedIn>
           <nav className="md:flex-between hidden w-full max-w-xs">
             <NavItems />
           </nav>
         </SignedIn>
-        <div className="flex w-32 gap-x-4 justify-end items-center">
+
+        <div className="flex gap-x-3 items-center">
           <SignedIn>
             <UserButton afterSignOutUrl="/" />
             <MobileNav />
           </SignedIn>
           <SignedOut>
-            <Button asChild className="rounded-full" size={"lg"}>
+            <Button asChild className="rounded-full hidden sm:flex" size="lg">
               <Link href="/sign-in" className="dark:text-white">
                 Login
               </Link>
             </Button>
+            <MobileNav />
           </SignedOut>
           <SwitcherTheme />
         </div>
       </div>
-    </MotionHeader>
+    </ScrollAwareHeader>
   );
 };
 

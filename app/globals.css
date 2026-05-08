@@ -73,6 +73,18 @@
   scroll-behavior: smooth;
 }
 
+/* Smooth dark/light mode transitions */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
+/* Exclude elements where transitions look bad */
+*:where(img, svg, video, canvas, [class*="animate-"]) {
+  transition: none !important;
+}
+
 body {
   font-family: var(--font-poppins)
 }

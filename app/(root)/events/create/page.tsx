@@ -12,7 +12,7 @@ const CreateEvent = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 100 }}
         transition={{ delay: 0.5 }}
-        className="bg-primary-50 bg-dotted-pattern dark:bg-[#000114]/10 bg-cover bg-center py-5 md:py-10"
+        className="bg-primary-50 bg-dotted-pattern dark:bg-[#000114]/10 bg-cover bg-center pt-4 "
       >
         <h3 className="wrapper h3-bold text-center sm:text-left dark:text-white">
           Create Event
@@ -22,7 +22,7 @@ const CreateEvent = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 100 }}
         transition={{ delay: 0.5 }}
-        className="wrapper my-8"
+        className="wrapper my-2"
       >
         <EventForm userId={userId} type="Create" />
       </MotionSection>

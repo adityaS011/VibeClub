@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import DatePicker from "react-datepicker";
@@ -25,30 +23,55 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "../ui/checkbox";
 import { useUploadThing } from "@/lib/uploadthing";
 import { useRouter } from "next/navigation";
-import { createEvent } from "@/lib/actions/events.actions";
+import { createEvent, updateEvent } from "@/lib/actions/events.actions";
+import { IEvent } from "@/lib/database/models/event.model";
+
 interface EventFormProps {
   userId: string;
   type: "Create" | "Edit";
+  event?: IEvent;
+  eventId?: string;
 }
 
-const EventForm = ({ userId, type }: EventFormProps) => {
+const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const [files, setFiles] = useState<File[]>([]);
-  const initialValues = eventDefaultValues;
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { startUpload } = useUploadThing("imageUploader");
   const router = useRouter();
+
+  const initialValues =
+    event && type === "Edit"
+      ? {
+          title: event.title,
+          description: event.description,
+          location: event.location,
+          imageUrl: event.imageUrl,
+          startDateTime: new Date(event.startDateTime),
+          endDateTime: new Date(event.endDateTime),
+          categoryId: event.category._id,
+          price: event.price,
+          isFree: event.isFree,
+          url: event.url,
+        }
+      : eventDefaultValues;
+
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: initialValues,
   });
+
+  const descriptionValue = form.watch("description") ?? "";
 
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
     let uploadedImageUrl = values.imageUrl;
     if (files.length > 0) {
       const uploadedImages = await startUpload(files);
       if (!uploadedImages) return;
-
       uploadedImageUrl = uploadedImages[0].url;
     }
+
+    setSubmitError(null);
+
     if (type === "Create") {
       try {
         const newEvent = await createEvent({
@@ -61,10 +84,33 @@ const EventForm = ({ userId, type }: EventFormProps) => {
           router.push(`/events/${newEvent._id}`);
         }
       } catch (error) {
+        setSubmitError("Failed to create event. Please try again.");
+        console.log(error);
+      }
+    }
+
+    if (type === "Edit") {
+      if (!eventId) {
+        router.back();
+        return;
+      }
+      try {
+        const updatedEvent = await updateEvent({
+          userId,
+          event: { ...values, imageUrl: uploadedImageUrl, _id: eventId },
+          path: `/events/${eventId}`,
+        });
+        if (updatedEvent) {
+          form.reset();
+          router.push(`/events/${updatedEvent._id}`);
+        }
+      } catch (error) {
+        setSubmitError("Failed to update event. Please try again.");
         console.log(error);
       }
     }
   }
+
   return (
     <Form {...form}>
       <form
@@ -76,11 +122,11 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             control={form.control}
             name="title"
             render={({ field }) => (
-              <FormItem className="w-full ">
+              <FormItem className="w-full">
                 <FormControl>
                   <Input
                     placeholder="Event Title"
-                    className="input-field dark:bg-slate-500/10 dark:text-white" 
+                    className="input-field dark:bg-slate-500/10 dark:text-white"
                     {...field}
                   />
                 </FormControl>
@@ -92,7 +138,7 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             control={form.control}
             name="categoryId"
             render={({ field }) => (
-              <FormItem className="w-full ">
+              <FormItem className="w-full">
                 <FormControl>
                   <Dropdown
                     onChangeHandler={field.onChange}
@@ -105,19 +151,31 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             )}
           />
         </div>
+
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormControl className="h-72">
+                <FormControl className="h-56">
                   <Textarea
                     placeholder="Event Description"
                     className="textarea rounded-2xl dark:bg-slate-500/10 dark:text-white"
                     {...field}
                   />
                 </FormControl>
+                <div className="flex justify-end pr-1">
+                  <span
+                    className={`text-xs tabular-nums ${
+                      descriptionValue.length > 380
+                        ? "text-red-500"
+                        : "text-grey-500 dark:text-grey-400"
+                    }`}
+                  >
+                    {descriptionValue.length} / 400
+                  </span>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -128,7 +186,6 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormControl>
-                
                   <FileUploader
                     onFieldChange={field.onChange}
                     imageUrl={field.value}
@@ -140,23 +197,24 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             )}
           />
         </div>
+
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
             control={form.control}
             name="location"
             render={({ field }) => (
-              <FormItem className="w-full ">
+              <FormItem className="w-full">
                 <FormControl>
                   <div className="px-4 bg-grey-50 dark:bg-slate-500/10 dark:text-white h-[55px] w-full py-2 rounded-full overflow-hidden flex-center">
                     <Image
                       src="/assets/icons/location-grey.svg"
                       width={24}
                       height={24}
-                      alt="location.svg"
+                      alt="location"
                     />
                     <Input
                       placeholder="Event Location"
-                      className="input-field dark:bg-transparent focus-visible:ring-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 "
+                      className="input-field dark:bg-transparent focus-visible:ring-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       {...field}
                     />
                   </div>
@@ -166,6 +224,7 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             )}
           />
         </div>
+
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
             control={form.control}
@@ -178,7 +237,7 @@ const EventForm = ({ userId, type }: EventFormProps) => {
                       src="/assets/icons/calendar.svg"
                       width={24}
                       height={24}
-                      alt="calendar.svg"
+                      alt="calendar"
                       className="filter-grey"
                     />
                     <p className="ml-3 whitespace-nowrap text-grey-600 dark:text-grey-400">
@@ -198,7 +257,6 @@ const EventForm = ({ userId, type }: EventFormProps) => {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="endDateTime"
@@ -210,7 +268,7 @@ const EventForm = ({ userId, type }: EventFormProps) => {
                       src="/assets/icons/calendar.svg"
                       width={24}
                       height={24}
-                      alt="calendar.svg"
+                      alt="calendar"
                       className="filter-grey"
                     />
                     <p className="ml-3 whitespace-nowrap text-grey-600 dark:text-grey-400">
@@ -231,6 +289,7 @@ const EventForm = ({ userId, type }: EventFormProps) => {
             )}
           />
         </div>
+
         <div className="flex flex-col gap-5 md:flex-row">
           <FormField
             control={form.control}
@@ -294,11 +353,11 @@ const EventForm = ({ userId, type }: EventFormProps) => {
                       src="/assets/icons/link.svg"
                       width={24}
                       height={24}
-                      alt="url.svg"
+                      alt="url"
                     />
                     <Input
                       placeholder="URL"
-                      className="input-field dark:bg-transparent focus-visible:ring-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 "
+                      className="input-field dark:bg-transparent focus-visible:ring-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       {...field}
                     />
                   </div>
@@ -309,13 +368,20 @@ const EventForm = ({ userId, type }: EventFormProps) => {
           />
         </div>
 
+        {submitError && (
+          <p className="text-sm text-red-500 dark:text-red-400 text-center rounded-xl bg-red-500/10 py-2 px-4">
+            {submitError}
+          </p>
+        )}
         <Button
           type="submit"
           size="lg"
           disabled={form.formState.isSubmitting}
           className="button col-span-2 w-full font-semibold dark:text-white"
         >
-          {form.formState.isSubmitting ? "Submitting..." : `${type} Event`}
+          {form.formState.isSubmitting
+            ? `${type === "Create" ? "Creating" : "Updating"} Event…`
+            : `${type} Event`}
         </Button>
       </form>
     </Form>
