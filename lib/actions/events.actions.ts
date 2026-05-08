@@ -97,7 +97,18 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
 
 // GET ALL EVENTS
 export async function getAllEvents({ query, limit = 6, page, category }: GetAllEventsParams) {
+  const startTime = Date.now();
+  
   try {
+    // Check if environment variables are set
+    if (!process.env.MONGODB_URI) {
+      console.warn('MONGODB_URI is not set, returning empty events');
+      return {
+        data: [],
+        totalPages: 0,
+      };
+    }
+
     await connectToDatabase()
 
     const titleCondition = query ? { title: { $regex: query, $options: 'i' } } : {}
@@ -115,10 +126,21 @@ export async function getAllEvents({ query, limit = 6, page, category }: GetAllE
     const events = await populateEvent(eventsQuery)
     const eventsCount = await Event.countDocuments(conditions)
 
-    return {
+    const result = {
       data: JSON.parse(JSON.stringify(events)),
       totalPages: Math.ceil(eventsCount / limit),
-    }
+    };
+
+    const duration = Date.now() - startTime;
+    // logger.logDatabaseOperation('find', 'events', duration, true, {
+    //   query: query,
+    //   category: category,
+    //   limit: limit,
+    //   page: page,
+    //   resultCount: events.length,
+    // });
+
+    return result;
   } catch (error) {
     handleError(error)
   }

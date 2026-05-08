@@ -7,6 +7,7 @@ import { getAllEvents } from '@/lib/actions/events.actions';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default async function Home() {
   const events = await getAllEvents({
@@ -17,7 +18,7 @@ export default async function Home() {
   });
 
   return (
-    <>
+    <ErrorBoundary>
       <MotionSection
         initial={{ opacity: 0 }}
         animate={{ opacity: 100 }}
@@ -128,6 +129,6 @@ export default async function Home() {
           />
         </div>
       </section>
-    </>
+    </ErrorBoundary>
   );
 }
